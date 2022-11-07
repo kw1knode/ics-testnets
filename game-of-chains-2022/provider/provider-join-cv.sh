@@ -3,10 +3,8 @@
 
 # Configuration
 # You should only have to modify the values in this block
-PRIV_VALIDATOR_KEY_FILE=~/priv_validator_key.json
-NODE_KEY_FILE=~/node_key.json
 NODE_HOME=~/.gaia
-NODE_MONIKER=provider
+NODE_MONIKER=Oni
 # ***
 
 CHAIN_BINARY_URL='https://github.com/hyphacoop/ics-testnets/raw/goc-day-1/game-of-chains-2022/provider/gaiad'
@@ -47,11 +45,6 @@ echo "Initializing $NODE_HOME..."
 rm -rf $NODE_HOME
 $CHAIN_BINARY init $NODE_MONIKER --chain-id $CHAIN_ID --home $NODE_HOME
 
-# Replace keys
-echo "Replacing keys and genesis file..."
-cp $PRIV_VALIDATOR_KEY_FILE $NODE_HOME/config/priv_validator_key.json
-cp $NODE_KEY_FILE $NODE_HOME/config/node_key.json
-
 # Replace genesis file
 wget $GENESIS_URL -O genesis.json
 mv genesis.json $NODE_HOME/config/genesis.json
@@ -69,29 +62,29 @@ go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@v1.0.0
 sudo rm /etc/systemd/system/cv-$NODE_MONIKER.service
 sudo touch /etc/systemd/system/cv-$NODE_MONIKER.service
 
-echo "[Unit]"                               | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service
-echo "Description=Cosmovisor service"       | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "After=network-online.target"          | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo ""                                     | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "[Service]"                            | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "User=$USER"                            | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "ExecStart=$HOME/go/bin/cosmovisor start --x-crisis-skip-assert-invariants --home $NODE_HOME --p2p.seeds $SEEDS" | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "Restart=always"                       | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "RestartSec=3"                         | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "LimitNOFILE=4096"                     | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "Environment='DAEMON_NAME=$CHAIN_BINARY'"      | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "Environment='DAEMON_HOME=$NODE_HOME'" | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "Environment='DAEMON_ALLOW_DOWNLOAD_BINARIES=true'" | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "Environment='DAEMON_RESTART_AFTER_UPGRADE=true'" | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "Environment='DAEMON_LOG_BUFFER_SIZE=512'" | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo ""                                     | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "[Install]"                            | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
-echo "WantedBy=multi-user.target"           | sudo tee /etc/systemd/system/cv-$NODE_MONIKER.service -a
+echo "[Unit]"                               | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service
+echo "Description=Cosmovisor service"       | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "After=network-online.target"          | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo ""                                     | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "[Service]"                            | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "User=$USER"                            | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "ExecStart=$HOME/go/bin/cosmovisor start --x-crisis-skip-assert-invariants --home $NODE_HOME --p2p.seeds $SEEDS" | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "Restart=always"                       | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "RestartSec=3"                         | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "LimitNOFILE=4096"                     | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "Environment='DAEMON_NAME=$CHAIN_BINARY'"      | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "Environment='DAEMON_HOME=$NODE_HOME'" | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "Environment='DAEMON_ALLOW_DOWNLOAD_BINARIES=true'" | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "Environment='DAEMON_RESTART_AFTER_UPGRADE=true'" | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "Environment='DAEMON_LOG_BUFFER_SIZE=512'" | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo ""                                     | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "[Install]"                            | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
+echo "WantedBy=multi-user.target"           | sudo tee /etc/systemd/system/cv-$CHAIN_ID.service -a
 
 # Start service
 echo "Starting cv-$NODE_MONIKER.service..."
 sudo systemctl daemon-reload
-sudo systemctl start cv-$NODE_MONIKER.service
+sudo systemctl start cv-$CHAIN_ID.service
 sudo systemctl restart systemd-journald
 
 # Add go and gaiad to the path
@@ -100,5 +93,5 @@ echo "export PATH=$PATH:/usr/local/go/bin:$NODE_HOME/cosmovisor/genesis/current/
 
 echo "***********************"
 echo "To see the Cosmovisor log enter:"
-echo "journalctl -fu cv-$NODE_MONIKER.service"
+echo "journalctl -fu cv-$CHAIN_ID.service"
 echo "***********************"
